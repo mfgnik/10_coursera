@@ -50,7 +50,7 @@ def get_course_info(course_url):
     start_date = soup.find('div', 'startdate').text
     return {
             'url': course_url,
-            'name': name_of_course,
+            'name_of_course': name_of_course,
             'weeks': weeks,
             'language': language,
             'user_rating': user_rating,
@@ -63,7 +63,7 @@ def output_courses_info_to_xlsx(course_list, file_path):
     worksheet = workbook.active
     worksheet.append([
         'Url',
-        'Name',
+        'Name of course',
         'Weeks',
         'Language',
         'User Rating',
@@ -73,7 +73,7 @@ def output_courses_info_to_xlsx(course_list, file_path):
         course_info = get_course_info(course_url)
         worksheet.append([
             course_info['url'],
-            course_info['name'],
+            course_info['name_of_course'],
             course_info['weeks'],
             course_info['language'],
             course_info['user_rating'],
