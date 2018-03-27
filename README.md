@@ -12,7 +12,16 @@ pip3 install -r requirements.txt
 # Quick Start
 
 ```bash
-python coursera.py coursera.xlsx
+python coursera.py -h
+usage: coursera.py [-h] [--output_path OUTPUT_PATH]
+                   [--amount_of_courses AMOUNT_OF_COURSES]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --output_path OUTPUT_PATH
+                        path to save xlsx file
+  --amount_of_courses AMOUNT_OF_COURSES
+                        amount of courses to get info
 ```
 
 # Project Goals
