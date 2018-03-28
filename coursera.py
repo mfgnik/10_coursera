@@ -10,7 +10,6 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--output_path',
-        type=str,
         help='path to save xlsx file',
         default='coursera.xlsx'
     )
@@ -23,7 +22,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def get_courses_list(amount):
+def get_url_courses_list(amount):
     courses_list = []
     tree = et.parse('sitemap_www_courses.xml')
     root = tree.getroot()
@@ -34,9 +33,13 @@ def get_courses_list(amount):
     return courses_list[:amount]
 
 
-def get_course_info(course_url):
-    html_page = requests.get(course_url).text
-    soup = BeautifulSoup(html_page, "html5lib")
+def get_html_code_of_course(course_url):
+    return requests.get(course_url).text
+
+
+
+def get_course_info(course_html_code):
+    soup = BeautifulSoup(course_html_code, 'html5lib')
     name_of_course = soup.find('h1').text
     language = soup.find('div', 'rc-Language').text
     try:
@@ -49,16 +52,15 @@ def get_course_info(course_url):
         weeks = None
     start_date = soup.find('div', 'startdate').text
     return {
-            'url': course_url,
             'name_of_course': name_of_course,
             'weeks': weeks,
             'language': language,
             'user_rating': user_rating,
-            'start_date': start_date
-            }
+            'start_date': start_date,
+    }
 
 
-def output_courses_info_to_xlsx(course_list, file_path):
+def output_courses_info_to_xlsx(course_list):
     workbook = openpyxl.Workbook()
     worksheet = workbook.active
     worksheet.append([
@@ -70,21 +72,23 @@ def output_courses_info_to_xlsx(course_list, file_path):
         'Start Date'
     ])
     for course_url in course_list:
-        course_info = get_course_info(course_url)
+        course_info = get_course_info(get_html_code_of_course(course_url))
         worksheet.append([
-            course_info['url'],
+            course_url,
             course_info['name_of_course'],
             course_info['weeks'],
             course_info['language'],
             course_info['user_rating'],
             course_info['start_date']
         ])
-    workbook.save(file_path)
+    return workbook
 
 
 if __name__ == '__main__':
     arguments = parse_args()
-    output_courses_info_to_xlsx(
-        get_courses_list(arguments.amount_of_courses),
-        arguments.output_path
-    )
+    try:
+        output_courses_info_to_xlsx(
+            get_url_courses_list(arguments.amount_of_courses)
+        ).save(arguments.output_path)
+    except FileNotFoundError:
+        print('Download file from link in README')
