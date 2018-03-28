@@ -37,7 +37,6 @@ def get_html_code_of_course(course_url):
     return requests.get(course_url).text
 
 
-
 def get_course_info(course_html_code):
     soup = BeautifulSoup(course_html_code, 'html5lib')
     name_of_course = soup.find('h1').text
@@ -60,7 +59,7 @@ def get_course_info(course_html_code):
     }
 
 
-def output_courses_info_to_xlsx(course_list):
+def output_courses_info_to_workbook(course_list):
     workbook = openpyxl.Workbook()
     worksheet = workbook.active
     worksheet.append([
@@ -87,7 +86,7 @@ def output_courses_info_to_xlsx(course_list):
 if __name__ == '__main__':
     arguments = parse_args()
     try:
-        output_courses_info_to_xlsx(
+        output_courses_info_to_workbook(
             get_url_courses_list(arguments.amount_of_courses)
         ).save(arguments.output_path)
     except FileNotFoundError:
