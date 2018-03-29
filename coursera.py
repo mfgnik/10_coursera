@@ -27,23 +27,19 @@ def parse_args():
     return parser.parse_args()
 
 
-def fetch_coursera_lxml_feed(lxml_url):
-    return requests.get(lxml_url).text
+def fetch_html_page(url):
+    return requests.get(url).text
 
 
 def get_url_courses_list(lxml_page, amount):
     courses_url_list = []
-    xml = bytes(bytearray(lxml_page, encoding='utf-8'))
+    xml = lxml_page.encode()
     tree = etree.fromstring(xml)
     for child in tree.getiterator():
         if 'https' in child.text:
             courses_url_list.append(child.text)
     shuffle(courses_url_list)
     return courses_url_list[:amount]
-
-
-def fetch_course_page(course_url):
-    return requests.get(course_url).text
 
 
 def get_course_info(course_html_code):
@@ -80,7 +76,7 @@ def output_courses_info_to_workbook(course_list):
         'Start Date'
     ])
     for course_url in course_list:
-        course_info = get_course_info(fetch_course_page(course_url))
+        course_info = get_course_info(fetch_html_page(course_url))
         worksheet.append([
             course_url,
             course_info['name_of_course'],
@@ -94,11 +90,8 @@ def output_courses_info_to_workbook(course_list):
 
 if __name__ == '__main__':
     arguments = parse_args()
-    try:
-        output_courses_info_to_workbook(
-            get_url_courses_list(
-                fetch_coursera_lxml_feed(arguments.lxml_url),
-                arguments.amount_of_courses)
-        ).save(arguments.output_path)
-    except FileNotFoundError:
-        print('Download file from link in README')
+    output_courses_info_to_workbook(
+        get_url_courses_list(
+            fetch_html_page(arguments.lxml_url),
+            arguments.amount_of_courses)
+    ).save(arguments.output_path)
