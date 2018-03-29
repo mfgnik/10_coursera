@@ -15,6 +15,7 @@ pip3 install -r requirements.txt
 python coursera.py -h
 usage: coursera.py [-h] [--output_path OUTPUT_PATH]
                    [--amount_of_courses AMOUNT_OF_COURSES]
+                   [--lxml_url LXML_URL]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -22,6 +23,7 @@ optional arguments:
                         path to save xlsx file
   --amount_of_courses AMOUNT_OF_COURSES
                         amount of courses to get info
+  --lxml_url LXML_URL   url with courses
 ```
 
 # Project Goals
