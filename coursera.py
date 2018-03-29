@@ -1,4 +1,4 @@
-import xml.etree.ElementTree as et
+from lxml import etree
 from random import shuffle
 import requests
 from bs4 import BeautifulSoup
@@ -19,21 +19,30 @@ def parse_args():
         help='amount of courses to get info',
         default=20
     )
+    parser.add_argument(
+        '--lxml_url',
+        help='url with courses',
+        default='https://www.coursera.org/sitemap~www~courses.xml'
+    )
     return parser.parse_args()
 
 
-def get_url_courses_list(amount):
-    courses_list = []
-    tree = et.parse('sitemap_www_courses.xml')
-    root = tree.getroot()
-    for child in root.iter():
+def fetch_coursera_lxml_feed(lxml_url):
+    return requests.get(lxml_url).text
+
+
+def get_url_courses_list(lxml_page, amount):
+    courses_url_list = []
+    xml = bytes(bytearray(lxml_page, encoding='utf-8'))
+    tree = etree.fromstring(xml)
+    for child in tree.getiterator():
         if 'https' in child.text:
-            courses_list.append(child.text)
-    shuffle(courses_list)
-    return courses_list[:amount]
+            courses_url_list.append(child.text)
+    shuffle(courses_url_list)
+    return courses_url_list[:amount]
 
 
-def get_html_code_of_course(course_url):
+def fetch_course_page(course_url):
     return requests.get(course_url).text
 
 
@@ -71,7 +80,7 @@ def output_courses_info_to_workbook(course_list):
         'Start Date'
     ])
     for course_url in course_list:
-        course_info = get_course_info(get_html_code_of_course(course_url))
+        course_info = get_course_info(fetch_course_page(course_url))
         worksheet.append([
             course_url,
             course_info['name_of_course'],
@@ -87,7 +96,9 @@ if __name__ == '__main__':
     arguments = parse_args()
     try:
         output_courses_info_to_workbook(
-            get_url_courses_list(arguments.amount_of_courses)
+            get_url_courses_list(
+                fetch_coursera_lxml_feed(arguments.lxml_url),
+                arguments.amount_of_courses)
         ).save(arguments.output_path)
     except FileNotFoundError:
         print('Download file from link in README')
